@@ -20,11 +20,12 @@ Nodo *crear_nodo(char *descripcion, int duracion, int incremento);
 
 void insertar_inicio_nodo(Nodo **start, Nodo *nodo);
 void insertar_final_nodo(Nodo **start, Nodo *nodo);
-Nodo *buscar_nodo(Nodo **start, char *buscado);
 
 void eliminar_nodo(Nodo **nodo);
 Nodo *quitar_nodo_x_palabra(Nodo **star, char *buscado);
 Nodo *quitar_nodo_x_id(Nodo **star, int id_buscado);
+
+void liberar_lista(Nodo **start); 
 
 void mostrar_tareas(Nodo ** start);
 
@@ -42,23 +43,26 @@ int main()
     printf("-----------------------------------------°°°BIENVENIDO A LA LISTA DE TAREAS°°°-----------------------------------------");
     do
     {
+
         printf("\nIngrese la descripcion de la tarea: ");
         scanf("%s", descripcion);
 
-        insertar_final_nodo(&start_tareas_pendientes, crear_nodo(descripcion, 10, incremento++));
-        insertar_final_nodo(&start_tareas_pendientes, crear_nodo(descripcion, rand()% (100 - 10 + 1) + 10, incremento++));
-        insertar_final_nodo(&start_tareas_pendientes, crear_nodo(descripcion, rand()% (100 - 10 + 1) + 10, incremento++));
+        int duracion = rand()% (100 - 10 + 1) + 10;
+
+        insertar_final_nodo(&start_tareas_pendientes, crear_nodo(descripcion, duracion, incremento++));
+
         mostrar_tareas(&start_tareas_pendientes);
 
         //Nodo *nodo_a_eliminar = quitar_nodo_x_palabra(&start_tareas_pendientes, "io");
         //eliminar_nodo(&nodo_a_eliminar);
-
-        mostrar_tareas(&start_tareas_pendientes);
-        printf("\nSi quiere salir presione '0' en caso negativo presione 1");
+        fflush(stdin);
+        printf("\n\nSi quiere salir presione '0' (en caso negativo presione cualquier tecla o numero y presione ENTER): ");
         scanf("%d", &condicion);
     } 
     while (condicion);
 
+    liberar_lista(&start_tareas_pendientes);
+    liberar_lista(&start_tareas_realizadas);
     return 0;
 }
 
@@ -79,6 +83,7 @@ Nodo *crear_nodo(char *descripcion, int duracion, int incremento)
 
     return new_nodo;
 }
+
 void insertar_inicio_nodo(Nodo **start, Nodo *nodo)
 {
     nodo->Siguiente = *start;
@@ -100,15 +105,8 @@ void insertar_final_nodo(Nodo **start, Nodo *nodo)
         aux->Siguiente = nodo;
     }
 }
-Nodo *buscar_nodo(Nodo **start, char *buscado)
-{
-    Nodo *aux = *start;
-    while (aux && strcmp(aux->Tarea.Descripcion, buscado) != 0)
-    {
-        aux = aux->Siguiente;
-    }
-    return aux;
-}
+
+
 Nodo *quitar_nodo_x_palabra(Nodo **star, char *buscado)
 {
     Nodo **aux = star;
@@ -147,6 +145,7 @@ Nodo *quitar_nodo_x_id(Nodo **star, int id_buscado)
 
     return NULL;
 }
+
 void eliminar_nodo(Nodo **nodo)
 {
     if(*nodo)
@@ -156,6 +155,7 @@ void eliminar_nodo(Nodo **nodo)
         *nodo = NULL;
     }
 }
+
 void mostrar_tareas(Nodo ** start)
 {
     Nodo *aux = *start;
@@ -173,4 +173,18 @@ void mostrar_tareas(Nodo ** start)
         printf("\n  Id de la Tarea: %d", aux->Tarea.TareaID);
         aux = aux->Siguiente;
     }
+}
+void liberar_lista(Nodo **start)
+{
+    Nodo *actual = *start;
+    while (actual)
+    {
+        Nodo *temp = actual;
+        actual = actual->Siguiente;
+        
+        free(temp->Tarea.Descripcion);
+        free(temp);
+    }
+
+    *start = NULL;
 }
