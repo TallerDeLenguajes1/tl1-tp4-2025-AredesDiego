@@ -25,7 +25,7 @@ void eliminar_nodo(Nodo **nodo);
 Nodo *quitar_nodo_x_palabra(Nodo **star, char *buscado);
 Nodo *quitar_nodo_x_id(Nodo **star, int id_buscado);
 
-void liberar_lista(Nodo **start); 
+void liberar_lista_tareas(Nodo **start);
 
 void mostrar_tareas(Nodo ** start);
 
@@ -40,10 +40,9 @@ int main()
     Nodo *start_tareas_pendientes = crear_lista_vacia();
     Nodo *start_tareas_realizadas = crear_lista_vacia();
 
-    printf("-----------------------------------------°°°BIENVENIDO A LA LISTA DE TAREAS°°°-----------------------------------------");
+    printf("-----------------------------------------\\\\\\\\|||BIENVENIDO A LA LISTA DE TAREAS|||////////-----------------------------------------");
     do
     {
-
         printf("\nIngrese la descripcion de la tarea: ");
         scanf("%s", descripcion);
 
@@ -61,8 +60,8 @@ int main()
     } 
     while (condicion);
 
-    liberar_lista(&start_tareas_pendientes);
-    liberar_lista(&start_tareas_realizadas);
+    liberar_lista_tareas(&start_tareas_pendientes);
+    liberar_lista_tareas(&start_tareas_realizadas);
     return 0;
 }
 
@@ -105,7 +104,6 @@ void insertar_final_nodo(Nodo **start, Nodo *nodo)
         aux->Siguiente = nodo;
     }
 }
-
 
 Nodo *quitar_nodo_x_palabra(Nodo **star, char *buscado)
 {
@@ -174,7 +172,7 @@ void mostrar_tareas(Nodo ** start)
         aux = aux->Siguiente;
     }
 }
-void liberar_lista(Nodo **start)
+void liberar_lista_tareas(Nodo **start)
 {
     Nodo *actual = *start;
     while (actual)
