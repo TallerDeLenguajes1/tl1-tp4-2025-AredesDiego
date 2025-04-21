@@ -15,8 +15,8 @@ typedef struct Nodo {
     struct Nodo *Siguiente;  
 } Nodo;
 
-Nodo *crear_nodo(char *descripcion, int duracion, int incremento);
 Nodo *crear_lista_vacia();
+Nodo *crear_nodo(char *descripcion, int duracion, int incremento);
 
 void insertar_inicio_nodo(Nodo **start, Nodo *nodo);
 void insertar_final_nodo(Nodo **start, Nodo *nodo);
@@ -28,6 +28,7 @@ void eliminar_nodo(Nodo **nodo);
 void liberar_lista_tareas(Nodo **start);
 
 void mostrar_tareas(Nodo ** start, int pendiente_o_realizada);
+void mostrar_x_busqueda_y_eleccion(Nodo **star, Nodo **star_realizadas);
 
 int main()
 {
@@ -54,12 +55,12 @@ int main()
         insertar_final_nodo(&start_tareas_pendientes, crear_nodo(descripcion, duracion, incremento++));
         mostrar_tareas(&start_tareas_pendientes, 0);
 
-        printf("\nTermino alguna tarea?\n           0 = NO\n           otra cosa = SI \nPonga su decision:");
+        printf("\nTermino alguna tarea? 0 = NO  otra cosa = SI \nPonga su decision:");
         scanf("%d", &eleccion);
 
         while (eleccion != 0)
         {
-            printf("++Que tarea termino, diga el id de la tarea que termino: ");
+            printf("\n++Que tarea termino, diga el id de la tarea que termino: ");
             scanf("%d", &eleccion);
             
             Nodo *nodo_mover = quitar_nodo_x_id(&start_tareas_pendientes, eleccion);
@@ -73,7 +74,7 @@ int main()
             {
                 printf("\nNo se encontro una tarea con ID %d.\n", eleccion);
             }   
-            printf("\n\n++Quiere salir de la papelera de las tareas realizadas:\n           0 = SI\n           otra cosa = NO \nPonga su decision:");
+            printf("\n\n++Quiere salir de la papelera de las tareas realizadas: 0 = SI      otra cosa = NO \nPonga su decision:");
             scanf("%d", &eleccion);
         }
 
@@ -82,6 +83,18 @@ int main()
         scanf("%d", &condicion);
     } 
     while (condicion);
+
+    printf("\nQuiere consultar alguna tarea: 0 = NO      otra cosa = SI \nPonga su decision:");
+    scanf("%d", &eleccion);
+
+    while (eleccion)
+    {
+        mostrar_x_busqueda_y_eleccion(&start_tareas_pendientes, &start_tareas_realizadas);
+
+        printf("\nQuiere buscar algo mas: 0 = NO      otra cosa = SI \nPonga su decision:");
+        scanf("%d", &eleccion);
+    }
+
     mostrar_tareas(&start_tareas_pendientes, 0);
     printf("\n------------------");
     mostrar_tareas(&start_tareas_realizadas, 1);
@@ -212,3 +225,47 @@ void liberar_lista_tareas(Nodo **start)
 
     *start = NULL;
 }
+void mostrar_x_busqueda_y_eleccion(Nodo **star, Nodo **star_realizadas)
+{
+    int eleccion_busqueda;
+    printf("\n¿Que tipo de busqueda quiere realizar?\n1 - Por palabra\n2 - Por ID\nOpcion: ");
+    scanf("%d", &eleccion_busqueda);
+
+    Nodo *nodo_encontrado = NULL;
+
+    if (eleccion_busqueda == 1)
+    {
+        char palabra[150];
+        printf("Ingrese la palabra clave: ");
+        scanf(" %149[^\n]", palabra);
+
+        nodo_encontrado = quitar_nodo_x_palabra(star, palabra);
+    }
+    else if (eleccion_busqueda == 2)
+    {
+        int id;
+        printf("Ingrese el ID de la tarea: ");
+        scanf("%d", &id);
+
+        nodo_encontrado = quitar_nodo_x_id(star, id);
+    }
+    else
+    {
+        printf("Opcion no valida.\n");
+        return;
+    }
+
+    if (nodo_encontrado != NULL)
+    {
+        insertar_final_nodo(star_realizadas, nodo_encontrado);
+        printf("\n--- Tarea encontrada y movida a 'Tareas Realizadas' ---\n");
+        printf("  Descripcion: %s\n", nodo_encontrado->Tarea.Descripcion);
+        printf("  Duracion: %d\n", nodo_encontrado->Tarea.Duracion);
+        printf("  ID: %d\n", nodo_encontrado->Tarea.TareaID);
+    }
+    else
+    {
+        printf("\nNo se encontro una tarea con ese criterio.\n");
+    }
+}
+
