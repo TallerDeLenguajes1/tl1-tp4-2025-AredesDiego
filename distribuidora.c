@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
-//pruebaaaa
+//pruebaaaaaa
 #define MAX_DESCRIPCION 150
 
 typedef struct Tarea
