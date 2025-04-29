@@ -3,269 +3,260 @@
 #include <string.h>
 #include <time.h>
 
-struct Tarea
-{ 
-    int TareaID;//Numérico autoincremental comenzando en 1000 
-    char *Descripcion;  //       
-    int Duracion; // entre 10 – 100  
-}typedef Tarea;  
+#define MAX_DESCRIPCION 150
 
-typedef struct Nodo {
-    Tarea Tarea;  
-    struct Nodo *Siguiente;  
-} Nodo;
+typedef struct Tarea
+{
+    int TareaId;
+    char *Descripcion;
+    int Duracion;
+}Tarea;
 
-Nodo *crear_lista_vacia();
-Nodo *crear_nodo(char *descripcion, int duracion, int incremento);
+typedef struct Tnodo
+{
+    Tarea Task;
+    struct Tnodo *Siguiente;
+}Tnodo;
 
-void insertar_inicio_nodo(Nodo **start, Nodo *nodo);
-void insertar_final_nodo(Nodo **start, Nodo *nodo);
+void menu_principal_ui();
+void ingreso_datos(char *descripcion, int *duracion);
+void mostrar_nodo(Tnodo *nodo, const char *origen);
+void mostrar_lista(Tnodo *start);
 
-Nodo *quitar_nodo_x_palabra(Nodo **star, char *palabra_buscado);
-Nodo *quitar_nodo_x_id(Nodo **star, int id_buscado);
+Tnodo *crear_lista_vacia();
+Tnodo *crear_nodo(char *descripcion, int duracion, int tarea_id);
+Tnodo *busqueda_x_id(Tnodo *start, int tarea_id);
+Tnodo *busqueda_x_palabra(Tnodo *start, char *descripcion);
+Tnodo *quitar_nodo_x_id(Tnodo **start, int tarea_id);
+Tnodo *quitar_nodo_x_palabra(Tnodo **start, char *descripcion);
 
-void eliminar_nodo(Nodo **nodo);
-void liberar_lista_tareas(Nodo **start);
-
-void mostrar_tareas(Nodo ** start, int pendiente_o_realizada);
-void mostrar_x_busqueda_y_eleccion(Nodo **star, Nodo **star_realizadas);
+void insertar_nodo_inicio(Tnodo **start, Tnodo *nuevo_nodo);
+void insertar_nodo_final(Tnodo **start, Tnodo *nuevo_nodo);
+void liberar_lista(Tnodo *start); 
 
 int main()
 {
-    srand(time(NULL));
+    char descripcion[MAX_DESCRIPCION];
+    int duracion; int tarea_id = 1000; int eleccion; 
+    
+    Tnodo *start_tareas_pendientes = crear_lista_vacia();
+    Tnodo *start_tareas_realizadas = crear_lista_vacia();
 
-    int incremento = 1000;
-    char descripcion[150];
-    int duracion = 0;
-    int condicion = 1;
-    int eleccion = 0;
-
-    Nodo *start_tareas_pendientes = crear_lista_vacia();
-    Nodo *start_tareas_realizadas = crear_lista_vacia();
-
-    printf("-----------------------------------------\\\\\\\\|||BIENVENIDO A LA LISTA DE TAREAS|||////////-----------------------------------------");
     do
     {
-        printf("\nIngrese la descripcion de la tarea: ");
-        scanf(" %149[^\n]", descripcion);
-
-        printf("\nIngrese la duracion de la tarea: ");
-        scanf("%d", &duracion);
-
-        insertar_final_nodo(&start_tareas_pendientes, crear_nodo(descripcion, duracion, incremento++));
-        mostrar_tareas(&start_tareas_pendientes, 0);
-
-        printf("\nTermino alguna tarea? 0 = NO  otra cosa = SI \nPonga su decision:");
+        menu_principal_ui();
+        printf("\nPonga su eleccion: ");
         scanf("%d", &eleccion);
 
-        while (eleccion != 0)
+        switch (eleccion)
         {
-            printf("\n++Que tarea termino, diga el id de la tarea que termino: ");
-            scanf("%d", &eleccion);
-            
-            Nodo *nodo_mover = quitar_nodo_x_id(&start_tareas_pendientes, eleccion);
+            case 1:
+                ingreso_datos(descripcion, &duracion);
+                insertar_nodo_inicio(&start_tareas_pendientes, crear_nodo(descripcion, duracion, tarea_id++));
+                break;
 
-            if(nodo_mover != NULL)
-            {
-                insertar_final_nodo(&start_tareas_realizadas, nodo_mover);
-                printf("\n--****---Se completo la tarea--****---");
-            }
-            else
-            {
-                printf("\nNo se encontro una tarea con ID %d.\n", eleccion);
-            }   
-            printf("\n\n++Quiere salir de la papelera de las tareas realizadas: 0 = SI      otra cosa = NO \nPonga su decision:");
-            scanf("%d", &eleccion);
+            case 2:
+                printf("\nPonga el Id de su tarea pendiente que termino:");
+                scanf("%d", &tarea_id);
+                insertar_nodo_final(&start_tareas_realizadas, quitar_nodo_x_id(&start_tareas_pendientes, tarea_id));
+                break;
+
+            case 3:
+                mostrar_lista(start_tareas_pendientes);
+                break;
+                
+            case 4:
+                mostrar_lista(start_tareas_realizadas);
+                break;
+
+            case 5:
+                printf("\n--------Tareas Pendientes");
+                mostrar_lista(start_tareas_pendientes);
+                printf("\n--------Tareas Realizadas");
+                mostrar_lista(start_tareas_realizadas);
+                break;
+
+            case 6:
+                printf("\nIngrese ID de tarea a buscar:");
+                scanf("%d", &tarea_id);
+                mostrar_nodo(busqueda_x_id(start_tareas_pendientes, tarea_id), "PENDIENTES");
+                mostrar_nodo(busqueda_x_id(start_tareas_realizadas, tarea_id), "REALIZADAS");
+                break;
+                
+            case 7:
+                printf("\nIngrese palabra a buscar:");
+                scanf("%s", descripcion);
+                mostrar_nodo(busqueda_x_palabra(start_tareas_pendientes, descripcion), "PENDIENTES");
+                mostrar_nodo(busqueda_x_palabra(start_tareas_realizadas, descripcion), "REALIZADAS");
+                break;
+
+            default:
+                break;
         }
+    } while (eleccion);
+    
+    liberar_lista(start_tareas_pendientes); 
+    liberar_lista(start_tareas_realizadas);
 
-        fflush(stdin);
-        printf("\n\nSi quiere finalizar la carga presione '0' (en caso negativo presione cualquier tecla o numero y presione ENTER): ");
-        scanf("%d", &condicion);
-    } 
-    while (condicion);
-
-    printf("\nQuiere consultar alguna tarea: 0 = NO      otra cosa = SI \nPonga su decision:");
-    scanf("%d", &eleccion);
-
-    while (eleccion)
-    {
-        mostrar_x_busqueda_y_eleccion(&start_tareas_pendientes, &start_tareas_realizadas);
-
-        printf("\nQuiere buscar algo mas: 0 = NO      otra cosa = SI \nPonga su decision:");
-        scanf("%d", &eleccion);
-    }
-
-    mostrar_tareas(&start_tareas_pendientes, 0);
-    printf("\n------------------");
-    mostrar_tareas(&start_tareas_realizadas, 1);
-
-    liberar_lista_tareas(&start_tareas_pendientes);
-    liberar_lista_tareas(&start_tareas_realizadas);
     return 0;
 }
 
-Nodo *crear_lista_vacia()
+Tnodo *crear_lista_vacia()
 {
     return NULL;
 }
-Nodo *crear_nodo(char *descripcion, int duracion, int incremento)
+Tnodo *crear_nodo(char *descripcion, int duracion, int tarea_id)
 {
-    Nodo *new_nodo = (Nodo*)malloc(sizeof(Nodo));
-
-    new_nodo->Tarea.TareaID = incremento;
-    new_nodo->Tarea.Duracion = duracion;
-
-    new_nodo->Tarea.Descripcion = malloc(strlen(descripcion)+1);
-    strcpy(new_nodo->Tarea.Descripcion, descripcion);
-    new_nodo->Siguiente = NULL;
-
-    return new_nodo;
-}
-
-void insertar_inicio_nodo(Nodo **start, Nodo *nodo)
-{
-    nodo->Siguiente = *start;
-    *start = nodo;
-}
-void insertar_final_nodo(Nodo **start, Nodo *nodo)
-{
-    if (*start == NULL) 
-    {
-        *start = nodo;
-    } 
-    else 
-    {
-        Nodo *aux = *start;
-        while (aux->Siguiente) 
-        {
-            aux = aux->Siguiente; 
-        }
-        aux->Siguiente = nodo;
-    }
-}
-
-Nodo *quitar_nodo_x_palabra(Nodo **star, char *palabra_buscado)
-{
-    Nodo **aux = star;
-
-    while (*aux != NULL && strstr((*aux)->Tarea.Descripcion, palabra_buscado) == NULL)
-    {
-        aux = &(*aux)->Siguiente;
-    }
-
-    if (*aux)
-    {
-        Nodo *temp = *aux;
-        *aux = (*aux)->Siguiente;
-        temp->Siguiente = NULL;
-        return temp;
-    }
-
-    return NULL;
-}
-Nodo *quitar_nodo_x_id(Nodo **star, int id_buscado)
-{
-    Nodo **aux = star;
-
-    while (*aux != NULL && (*aux)->Tarea.TareaID != id_buscado)
-    {
-        aux = &(*aux)->Siguiente;
-    }
-
-    if (*aux)
-    {
-        Nodo *temp = *aux;
-        *aux = (*aux)->Siguiente;
-        temp->Siguiente = NULL;
-        return temp;
-    }
-
-    return NULL;
-}
-
-void eliminar_nodo(Nodo **nodo)
-{
-    if(*nodo)
-    {
-        free((*nodo)->Tarea.Descripcion);
-        free(*nodo);
-        *nodo = NULL;
-    }
-}
-
-void mostrar_tareas(Nodo ** start, int pendiente_o_realizada)
-{
-    Nodo *aux = *start;
-    if (aux == NULL)
-        printf("\n NO hay tareas :/");
+    Tnodo *nuevo_nodo = (Tnodo*)malloc(sizeof(Tnodo));
     
-    char *frase = (pendiente_o_realizada == 0) ? "PENDIENDTES" : "REALIZADAS";
-
-    printf("\n\n---------------------------LISTADO DE TAREAS %s ", frase);
+    nuevo_nodo->Task.Descripcion = malloc(strlen(descripcion)+1); 
+    strcpy(nuevo_nodo->Task.Descripcion, descripcion);
+    
+    nuevo_nodo->Task.TareaId = tarea_id;
+    nuevo_nodo->Task.Duracion = duracion;
+    nuevo_nodo->Siguiente = NULL;
+    
+    return nuevo_nodo;
+}
+Tnodo *busqueda_x_id(Tnodo *start, int tarea_id)
+{
+    Tnodo *aux = start;
+    while (aux && aux->Task.TareaId != tarea_id)
+    {
+        aux = aux->Siguiente;
+    }
+    return aux;
+}
+Tnodo *busqueda_x_palabra(Tnodo *start, char *descripcion)
+{
+    Tnodo *aux = start;
     while (aux)
     {
-        printf("\n-----Datos de la Tarea:");
-        printf("\n  Descripcion: %s", aux->Tarea.Descripcion);
-        printf("\n  Duracion: %d", aux->Tarea.Duracion);
-        printf("\n  Id de la Tarea: %d", aux->Tarea.TareaID);
+        if (strstr(aux->Task.Descripcion, descripcion) != NULL)
+            return aux;
+        aux = aux->Siguiente;
+    }
+    return NULL;
+}
+Tnodo *quitar_nodo_x_id(Tnodo **start, int tarea_id)
+{
+    Tnodo **aux = start;
+
+    while (*aux && (*aux)->Task.TareaId != tarea_id)
+    {
+        aux = &(*aux)->Siguiente;
+    }
+
+    if(*aux)
+    {
+        Tnodo *quitado = *aux;
+        *aux = (*aux)->Siguiente;
+        quitado->Siguiente = NULL;
+
+        return quitado;  
+    }
+
+    return NULL;
+}
+Tnodo *quitar_nodo_x_palabra(Tnodo **start, char *descripcion)
+{
+    Tnodo **aux = start;
+
+    while (*aux && strstr((*aux)->Task.Descripcion, descripcion) == NULL)
+    {
+        aux = &(*aux)->Siguiente;
+    }
+    
+    if (*aux)
+    {
+        Tnodo *temp = *aux;
+        *aux = (*aux)->Siguiente;
+        temp->Siguiente = NULL;
+        return temp;
+    }
+    
+    return NULL;
+}
+
+void menu_principal_ui()
+{
+    printf("\n----------------------------BIENVENIDO A LA LISTA DE TAREAS-------------------------------------------------");
+    printf("\n[0]--Salir");
+    printf("\n[1]--Carga de tareas pendientes");
+    printf("\n[2]--Mover tareas pendientes a tareas realizadas");
+    printf("\n[3]--Mostrar tareas pendientes");
+    printf("\n[4]--Mostrar tareas realizadas");
+    printf("\n[5]--Mostrar tareas pendientes y tareas realizadas");
+    printf("\n[6]--Buscador de tareas por id");
+    printf("\n[7]--Buscador de tareas por palabra");
+}
+void insertar_nodo_inicio(Tnodo **start, Tnodo *nuevo_nodo)
+{
+    nuevo_nodo->Siguiente = *start;
+    *start = nuevo_nodo;
+}
+void insertar_nodo_final(Tnodo **start, Tnodo *nuevo_nodo)
+{
+    if (*start == NULL)
+    {
+        // Si la lista está vacía, el nuevo nodo es el primer nodo
+        *start = nuevo_nodo;
+    }
+    else
+    {
+        Tnodo *aux = *start;
+        while (aux->Siguiente)
+        {
+            aux = aux->Siguiente;
+        }
+        aux->Siguiente = nuevo_nodo;
+    }
+}
+void ingreso_datos(char *descripcion, int *duracion)
+{
+    getchar(); // consumir el salto de línea pendiente
+    printf("\n\nIngrese la descripcion de la Tarea: ");
+    fgets(descripcion, MAX_DESCRIPCION, stdin);
+    descripcion[strcspn(descripcion, "\n")] = 0; // eliminar salto de línea
+
+    printf("Ingrese la duracion de la Tarea: ");
+    scanf("%d", duracion);
+}
+void mostrar_lista(Tnodo *start)
+{
+    if (start == NULL)
+    { 
+        printf("\nLa lista está vacía");
+        return;
+    }
+    Tnodo *aux = start;
+    
+    while (aux)
+    {
+        printf("\n\nDescripcion de Tarea: %s", aux->Task.Descripcion);
+        printf("\nDuracion de Tarea: %d", aux->Task.Duracion);
+        printf("\nId de Tarea: %d", aux->Task.TareaId);
+
         aux = aux->Siguiente;
     }
 }
-void liberar_lista_tareas(Nodo **start)
+void mostrar_nodo(Tnodo *nodo, const char *origen) 
 {
-    Nodo *actual = *start;
-    while (actual)
-    {
-        Nodo *temp = actual;
-        actual = actual->Siguiente;
-        
-        free(temp->Tarea.Descripcion);
-        free(temp);
-    }
-
-    *start = NULL;
+    if (nodo == NULL) return;
+    
+    printf("\n--- Tarea encontrada en %s ---\n", origen);
+    printf("  Descripcion: %s\n", nodo->Task.Descripcion);
+    printf("  Duracion: %d\n", nodo->Task.Duracion);
+    printf("  ID: %d\n", nodo->Task.TareaId);
 }
-void mostrar_x_busqueda_y_eleccion(Nodo **star, Nodo **star_realizadas)
+void liberar_lista(Tnodo *start)
 {
-    int eleccion_busqueda;
-    printf("\n¿Que tipo de busqueda quiere realizar?\n1 - Por palabra\n2 - Por ID\nOpcion: ");
-    scanf("%d", &eleccion_busqueda);
-
-    Nodo *nodo_encontrado = NULL;
-
-    if (eleccion_busqueda == 1)
+    Tnodo *aux;
+    while (start)
     {
-        char palabra[150];
-        printf("Ingrese la palabra clave: ");
-        scanf(" %149[^\n]", palabra);
-
-        nodo_encontrado = quitar_nodo_x_palabra(star, palabra);
-    }
-    else if (eleccion_busqueda == 2)
-    {
-        int id;
-        printf("Ingrese el ID de la tarea: ");
-        scanf("%d", &id);
-
-        nodo_encontrado = quitar_nodo_x_id(star, id);
-    }
-    else
-    {
-        printf("Opcion no valida.\n");
-        return;
-    }
-
-    if (nodo_encontrado != NULL)
-    {
-        insertar_final_nodo(star_realizadas, nodo_encontrado);
-        printf("\n--- Tarea encontrada y movida a 'Tareas Realizadas' ---\n");
-        printf("  Descripcion: %s\n", nodo_encontrado->Tarea.Descripcion);
-        printf("  Duracion: %d\n", nodo_encontrado->Tarea.Duracion);
-        printf("  ID: %d\n", nodo_encontrado->Tarea.TareaID);
-    }
-    else
-    {
-        printf("\nNo se encontro una tarea con ese criterio.\n");
+        aux = start;
+        start = start->Siguiente;
+        free(aux->Task.Descripcion);
+        free(aux);
     }
 }
-
